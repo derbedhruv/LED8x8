@@ -28,6 +28,9 @@
   
 
 *******************************************/
+String row, col, inputString;  // these will capture the row and column that we want to put on
+
+// the next 2 arrays indicate which LEDs in the row are connected to which Teensy pin
 int ledrow[] = 
 {
   17,   // pin 17 corresponds to A
@@ -52,7 +55,9 @@ int ledcol[] =
   21
 };
 
-int pinOffStateCol[] = 
+// the next 2 arrays indicate what is the active state of the particular column LED (0 - active low, 1 - active HIGH)
+// but this shit doesn't work
+int pinActiveCol[] = 
 {
   1,
   1,
@@ -63,18 +68,29 @@ int pinOffStateCol[] =
   1,
   0
 };
-
+int pinActiveRow[] = 
+{
+  0,
+  0,
+  1,
+  0,
+  1,
+  1,
+  0,
+  0
+};
 
 void setup() {
-  // start by putting everything in its OFF state...
-  
-  
-  Serial.begin(9600);
-  
-  for(int i=5; i<22; i++) {
+  // set pin modes
+  for (int i=5; i<22; i++) {
     pinMode(i, OUTPUT);
   }
   
+  // start by putting everything in its OFF state...
+  clearkar();
+  
+  Serial.begin(9600);
+   
   /*
   digitalWrite(5, 0);  // COLUMN 5 TEENSY UP LOW
   digitalWrite(6, 0);  // COLUMN 2 TEENSY UP LOW
@@ -94,8 +110,55 @@ void setup() {
   digitalWrite(20, 1);  // ROW D TEENSY UP HIGH
   digitalWrite(21, 0);  // COLUmn 7 teensy up low
   */
+  
+  lightkaro(8,8);
+  
 }
 
 void loop() {
-  
+  while (Serial.available()) {
+    // get the new byte:
+    char inChar = (char)Serial.read();
+    
+    if (inChar == ',') {
+      // Serial.println(inputString);
+      row = inputString;
+      // reset that shit
+      inputString = "";
+    } else {
+      if (inChar == '\r') {
+        col = inputString;
+        // Serial.println(inputString);
+        // reset that shit
+        inputString = "";
+        clearkar();
+        lightkaro(row.toInt(), col.toInt());
+      } else {
+        inputString += inChar;
+      }
+    }
+  }
+}
+
+void clearkar() {
+  // clear all the LEDs and refresh that shit
+  for (int j = 0; j<8; j++) {
+    // rows
+    digitalWrite(ledrow[j], 0);  // 0 for off
+    // columns
+    // digitalWrite(ledcol[j], 1);  // we want to put things in their off state
+  }
+}
+
+
+// the function which lights up the m,n LED in the array
+void lightkaro(int m, int n) {
+  digitalWrite(ledrow[m], 1);
+  for (int k = 0; k<8; k++) {
+    if (k == n) {
+      digitalWrite(ledcol[k], 0);  
+    } else {
+      digitalWrite(ledcol[k], 1);
+    }
+  } 
 }
