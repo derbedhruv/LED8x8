@@ -119,17 +119,10 @@ void setup() {
   clearkar();
   
   Serial.begin(9600);
- 
-  // setting everything off first...
-  for(int i = 0; i<8; i++) {
-    digitalWrite(redcol[i], HIGH);
-    digitalWrite(bluecol[i], HIGH);
-    digitalWrite(greencol[i], HIGH);
-  } 
   
   // then putting ON red (0,0)
-  digitalWrite(row[0], HIGH);
-  digitalWrite(redcol[0], LOW);
+  digitalWrite(rows[0], HIGH);
+  digitalWrite(bluecol[2], LOW);
   
 }
 
@@ -160,8 +153,9 @@ void loop() {
 
 void clearkar() {
   // clear all the LEDs and refresh that shit
-  // setting everything off first...
+  // setting everything off first...  
   for(int i = 0; i<8; i++) {
+    digitalWrite(rows[i], LOW);
     digitalWrite(redcol[i], HIGH);
     digitalWrite(bluecol[i], HIGH);
     digitalWrite(greencol[i], HIGH);
