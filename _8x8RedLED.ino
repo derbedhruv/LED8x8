@@ -1,117 +1,135 @@
 /******************************************
-  8x8 LED display controller
+  8x8 RGB LED display controller
   
   Author: Dhruv Joshi
   
   This is being made expressly for the FPM project.
-  8x8 red LED display was procured from local vendors.
+  8x8 red RGB LED was procured from ebay India
   
-  Teensy 3.1 used as the controller.
-  Digital pins 5-12 and 14-21 used respectively for the 
-  -ve and +ve terminals
-  The pinout of the 8x8 LED array is as follows:
-  (The orientation is such that the printed text "1088A5" is 
-  written on the left side of the array
+  Arduino MEGA 2560 used as the controller.
+  Digital pins 22 - 52 (even) used for pins 32 - 17 resp. 
+  and 23 - 53 (odd) pins used for pins 16 - 1 resp of the RGB Matrix
+    
+  The pinout of the 8x8 LED array is given on http://www.ebay.in/itm/8x8-RGB-LED-Matrix-Common-Anode-Diffused-Arduino-Full-Colour-RGB-Color-60mm-/151453142648?aff_source=vizury
+  basically, the pins are from 1 - 16 (one set) and 17 - 32 (the other set)
   
-  H - active HIGH
-  L - active LOW
+  The map for the RED:
   
-             0 1 2 3 4 5 6 7 8
-    3L   -|-----------------| A - HH
- 1  1L   -|                 | B - GH
- 0  BH   -|                 | C - 6L
- 8  CH   -|                 | D - AH
- 8  0L   -|                 | E - 4L
- A  EH   -|                 | F - FH
- 5  2L   -|                 | G - DH
-    5L   -|-----------------| H - 7L
+            9 10 11 12 13 14 15 16
+          __|__|__|__|__|__|__|__|__
+     17  |                         |
+     18  |                         |
+     19  |                         |
+     20  |                         |
+     29  |                         |
+     30  |                         |
+     31  |                         |
+     32  |                         |
+         |-------------------------|
   
+  The map for the GREEN:
+  
+           28 27 26 25 24 23 22 21
+          __|__|__|__|__|__|__|__|__
+     17  |                         |
+     18  |                         |
+     19  |                         |
+     20  |                         |
+     29  |                         |
+     30  |                         |
+     31  |                         |
+     32  |                         |
+         |-------------------------|
+         
+   The map for the BLUE:
+   
+            1  2  3  4  5  6  7  8
+          __|__|__|__|__|__|__|__|__
+     17  |                         |
+     18  |                         |
+     19  |                         |
+     20  |                         |
+     29  |                         |
+     30  |                         |
+     31  |                         |
+     32  |                         |
+         |-------------------------|
 
+   Remember that all this is on the same board. 
+   
+   And our pin map is as follows: 
+   (MEGA - RGB array)
+   
+   22 - 32                      23 - 16
+   24 - 31                      25 - 15
+   26 - 30                      27 - 14
+   ...                          ...
+   52 - 17                      53 - 1
+   
+   mega = 86 - 2*rgb            mega = 55 - 2*rgb
+   
+   
 *******************************************/
 String row, col, inputString;  // these will capture the row and column that we want to put on
 
-// the next 2 arrays indicate which LEDs in the row are connected to which Teensy pin
-int ledrow[] = 
+// red column pins on the mega
+int redcol[] = 
 {
-  17,   // pin 17 corresponds to A
-  10,
-  9,
-  20,
-  7,
-  19,
-  15,
-  14
+  // rgb pins are 
+  //  9, 10, 11, 12, 13, 14, 15, 16
+  // mega pins...
+     37, 35, 33, 31, 29, 27, 25, 23
 };
 
-int ledcol[] = 
+// green...
+int greencol[] = 
 {
-  8,  // pin 8 corresponds to column 0
-  11,
-  6,
-  12,
-  18,
-  5,
-  16,
-  21
+  // rgb pins are 
+  // 28, 27, 26, 25, 24, 23, 22, 21
+  // mega pins...
+     30, 32, 34, 36, 38, 40, 42, 44
 };
 
-// the next 2 arrays indicate what is the active state of the particular column LED (0 - active low, 1 - active HIGH)
-// but this shit doesn't work
-int pinActiveCol[] = 
+// blue...
+int bluecol[] = 
 {
-  1,
-  1,
-  0,
-  1,
-  0,
-  1,
-  1,
-  0
+  // rgb pins are 
+  //  1,  2,  3,  4,  5,  6,  7,  8,
+  // mega pins...
+     53, 51, 49, 47, 45, 43, 41, 39
 };
-int pinActiveRow[] = 
+
+// and finally the fixed rows..
+// these are the anodes, +ve voltage here
+int rows[] = 
 {
-  0,
-  0,
-  1,
-  0,
-  1,
-  1,
-  0,
-  0
+    // rgb pins are 
+    // 17, 18, 19, 20, 29, 30, 31, 32
+    // mega pins are
+       52, 50, 48, 46, 28, 26, 24, 22
 };
 
 void setup() {
   // set pin modes
-  for (int i=5; i<22; i++) {
-    pinMode(i, OUTPUT);
+  for (int j=22; j<53; j++) {
+    pinMode(j, OUTPUT);
   }
   
   // start by putting everything in its OFF state...
   clearkar();
   
   Serial.begin(9600);
-   
-  /*
-  digitalWrite(5, 0);  // COLUMN 5 TEENSY UP LOW
-  digitalWrite(6, 0);  // COLUMN 2 TEENSY UP LOW
-  digitalWrite(7, 1);  // ROW E TEENSY UP HIGH
-  digitalWrite(8, 0);  // COLUMN 0 TEENSY UP LOW
-  digitalWrite(9, 1);  // ROW C TEENSY UP HIGH
-  digitalWrite(10, 1);  // ROW B TEENSU UP HIGH
-  digitalWrite(11, 0);  // COL 1 TEENSY UP LOW
-  digitalWrite(12, 0);  // COL 3 TEENSY UP LOW
+ 
+  // setting everything off first...
+  for(int i = 0; i<8; i++) {
+    digitalWrite(redcol[i], HIGH);
+    digitalWrite(bluecol[i], HIGH);
+    digitalWrite(greencol[i], HIGH);
+  } 
   
-  digitalWrite(14, 1);    // ROW H teensy up high
-  digitalWrite(15, 1);    // riw G teensy up high
-  digitalWrite(16, 0);    // COLUMN 6 TEENSY UP LOW
-  digitalWrite(17, 1);  // ROW A TEENSY UP high
-  digitalWrite(18, 0);   // column 4 teensy up low
-  digitalWrite(19, 1);  // row F teensy up HIGH
-  digitalWrite(20, 1);  // ROW D TEENSY UP HIGH
-  digitalWrite(21, 0);  // COLUmn 7 teensy up low
-  */
-  
-  lightkaro(8,8);
+  // then putting ON red (0,0)
+  digitalWrite(row[0], HIGH);
+  digitalWrite(redcol[0], LOW);
   
 }
 
@@ -131,8 +149,8 @@ void loop() {
         // Serial.println(inputString);
         // reset that shit
         inputString = "";
-        clearkar();
-        lightkaro(row.toInt(), col.toInt());
+        // clearkar();
+        // lightkaro(row.toInt(), col.toInt());
       } else {
         inputString += inChar;
       }
@@ -142,23 +160,23 @@ void loop() {
 
 void clearkar() {
   // clear all the LEDs and refresh that shit
-  for (int j = 0; j<8; j++) {
-    // rows
-    digitalWrite(ledrow[j], 0);  // 0 for off
-    // columns
-    // digitalWrite(ledcol[j], 1);  // we want to put things in their off state
-  }
+  // setting everything off first...
+  for(int i = 0; i<8; i++) {
+    digitalWrite(redcol[i], HIGH);
+    digitalWrite(bluecol[i], HIGH);
+    digitalWrite(greencol[i], HIGH);
+  } 
 }
 
 
 // the function which lights up the m,n LED in the array
 void lightkaro(int m, int n) {
-  digitalWrite(ledrow[m], 1);
+  // digitalWrite(ledrow[m], 1);
   for (int k = 0; k<8; k++) {
     if (k == n) {
-      digitalWrite(ledcol[k], 0);  
+      // digitalWrite(ledcol[k], 0);  
     } else {
-      digitalWrite(ledcol[k], 1);
+      // digitalWrite(ledcol[k], 1);
     }
   } 
 }
