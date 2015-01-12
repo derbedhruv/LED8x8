@@ -88,7 +88,8 @@ int greencol[] =
   // rgb pins are 
   // 28, 27, 26, 25, 24, 23, 22, 21
   // mega pins...
-     30, 32, 34, 36, 38, 40, 42, 44
+  // 30, 32, 34, 36, 38, 40, 42, 44    apparently thisis reverse .. wtf
+     44, 42, 40, 38, 36, 34, 32, 30
 };
 
 // blue...
