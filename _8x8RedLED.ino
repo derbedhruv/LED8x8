@@ -70,7 +70,8 @@
    
    
 *******************************************/
-String row, col, inputString;  // these will capture the row and column that we want to put on
+char color, row, column;
+String inputString;  // these will capture the row and column that we want to put on
 
 // red column pins on the mega
 int redcol[] = 
@@ -121,33 +122,39 @@ void setup() {
   Serial.begin(9600);
   
   // then putting ON red (0,0)
+  
   digitalWrite(rows[0], HIGH);
   digitalWrite(bluecol[2], LOW);
-  
+  /**/
 }
 
 void loop() {
   while (Serial.available()) {
     // get the new byte:
     char inChar = (char)Serial.read();
-    
+    /*
     if (inChar == ',') {
       // Serial.println(inputString);
       row = inputString;
       // reset that shit
       inputString = "";
     } else {
-      if (inChar == '\r') {
-        col = inputString;
-        // Serial.println(inputString);
+      */
+      if (inChar == '\n') {
+        // end of line hapens at \r\n. Seperate values out
+        color = inputString[0];
+        row = inputString[1];
+        column = inputString[2];
+        
+        // Serial.println(inputString[0]);
         // reset that shit
         inputString = "";
-        // clearkar();
-        // lightkaro(row.toInt(), col.toInt());
+        clearkar();
+        lightkaro(color, int(row), int(column));
       } else {
         inputString += inChar;
       }
-    }
+    //}
   }
 }
 
@@ -164,13 +171,38 @@ void clearkar() {
 
 
 // the function which lights up the m,n LED in the array
-void lightkaro(int m, int n) {
-  // digitalWrite(ledrow[m], 1);
-  for (int k = 0; k<8; k++) {
-    if (k == n) {
-      // digitalWrite(ledcol[k], 0);  
-    } else {
-      // digitalWrite(ledcol[k], 1);
+void lightkaro(char c, int m, int n) {
+  // we will subtract 48 because otherwise it will be the 
+  // ascii int representation of the int value and not its actual value
+  Serial.print(c);
+  Serial.print(" | ");
+  Serial.print(m-48);
+  Serial.print(" | ");
+  Serial.print(n-48);
+  Serial.println(" | ");
+  
+  // first light up the row (since they're common)..
+  digitalWrite(rows[m-48], HIGH);
+  
+  // switch column case based on color...
+  switch(c) {
+    case 'r':
+    {
+    // this is for the case of red
+      digitalWrite(redcol[n-48], LOW);
+      break;
     }
-  } 
+    case 'g':
+    {
+    // this is for the case of green
+      digitalWrite(greencol[n-48], LOW);
+      break;
+    }
+    case 'b':
+    {
+    // this is for the case of blue
+      digitalWrite(bluecol[n-48], LOW);
+      break;
+    }
+  }
 }
