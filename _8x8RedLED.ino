@@ -113,7 +113,7 @@ int rows[] =
 
 void setup() {
   // set pin modes
-  for (int j=22; j<53; j++) {
+  for (int j=22; j<54; j++) {
     pinMode(j, OUTPUT);
   }
   
@@ -123,7 +123,7 @@ void setup() {
   Serial.begin(9600);
   
   // then putting ON red (0,0)
-  
+  /*
   digitalWrite(rows[0], HIGH);
   digitalWrite(bluecol[2], LOW);
   /**/
@@ -143,15 +143,25 @@ void loop() {
       */
       if (inChar == '\n') {
         // end of line hapens at \r\n. Seperate values out
-        color = inputString[0];
-        row = inputString[1];
-        column = inputString[2];
-        
-        // Serial.println(inputString[0]);
-        // reset that shit
-        inputString = "";
-        clearkar();
-        lightkaro(color, int(row), int(column));
+        if (inputString.length() == 4) {  // one extra for the '\n'
+          color = inputString[0];
+          row = inputString[1];
+          column = inputString[2];
+          
+          if (int(row) - 48 > 7 || int(column) - 48 > 7) {
+            Serial.println("digits out of range");
+          } else {          
+          // reset that shit
+            inputString = "";
+            clearkar();
+            lightkaro(color, int(row), int(column));
+          }
+        } else if (inputString[0] == 'x') {
+          clearkar();
+        } else {
+          Serial.println("something's wrong, check entry"); 
+          inputString = "";
+        }
       } else {
         inputString += inChar;
       }
@@ -205,5 +215,7 @@ void lightkaro(char c, int m, int n) {
       digitalWrite(bluecol[n-48], LOW);
       break;
     }
+    default:
+      Serial.println("first character not matching r,g,b.");
   }
 }
