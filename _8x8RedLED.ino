@@ -6,7 +6,7 @@
   This is being made expressly for the FPM project.
   8x8 red LED display was procured from local vendors.
   
-  Teensy 3.1 used as the controller.
+  Teensy 3.1 used as the controller, and an Arduino MEGA
   Digital pins 5-12 and 14-21 used respectively for the 
   -ve and +ve terminals
   The pinout of the 8x8 LED array is as follows:
@@ -28,9 +28,16 @@
   
 
 *******************************************/
+// first and foremost you need to choose your microcontroller
+#define mega
+// #define teensy
+
 String row, col, inputString;  // these will capture the row and column that we want to put on
 
+// *****************************
+// This part is for Teensy only. comment it if you are using MEGA
 // the next 2 arrays indicate which LEDs in the row are connected to which Teensy pin
+/*
 int ledrow[] = 
 {
   17,   // pin 17 corresponds to A
@@ -54,6 +61,36 @@ int ledcol[] =
   16,
   21
 };
+/**/
+
+// **************************************  
+// THESE ARE FOR THE ARDUINO MEGA
+int ledrow[] = 
+{
+  3,   // corresponds to A
+  20,
+  19,
+  7,
+  17,
+  6,
+  2,
+  5
+    
+};
+
+int ledcol[] = 
+{
+  14,  // corresponds to column 0
+  21,
+  16,
+  18,
+  8,
+  15,
+  4,
+  9
+  
+};
+/**/
 
 // the next 2 arrays indicate what is the active state of the particular column LED (0 - active low, 1 - active HIGH)
 // but this shit doesn't work
