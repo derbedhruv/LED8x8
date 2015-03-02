@@ -16,6 +16,8 @@
   H - active HIGH
   L - active LOW
   
+  <---------side labelled "-"
+  
              0 1 2 3 4 5 6 7 8
     3L   -|-----------------| A - HH
  1  1L   -|                 | B - GH
@@ -67,27 +69,28 @@ int ledcol[] =
 // THESE ARE FOR THE ARDUINO MEGA
 int ledrow[] = 
 {
-  3,   // corresponds to A
-  20,
-  19,
+  44,   // corresponds to A
   7,
-  17,
   6,
-  2,
-  5
+  50,
+  4,
+  48,
+  40,
+  38,
+  52
     
 };
 
 int ledcol[] = 
 {
-  14,  // corresponds to column 0
-  21,
-  16,
-  18,
+  5,  // corresponds to column 0
   8,
-  15,
-  4,
-  9
+  3,
+  9,
+  46,
+  2,
+  42,
+  
   
 };
 /**/
@@ -119,8 +122,9 @@ int pinActiveRow[] =
 
 void setup() {
   // set pin modes
-  for (int i=5; i<22; i++) {
-    pinMode(i, OUTPUT);
+  for (int i=0; i<8; i++) {
+    pinMode(ledrow[i], OUTPUT);
+    pinMode(ledcol[i], OUTPUT);
   }
   
   // start by putting everything in its OFF state...
